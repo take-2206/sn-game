@@ -86,29 +86,58 @@ function update(){
 function bush(x){r(x,G-22,34,22,'#a9c93a');r(x+6,G-30,22,10,'#bcd94d');r(x+4,G-16,8,6,'#8fb02b')}
 
 function spawnConf(){const cl=['#ff5d8f','#ffd23f','#4ecdc4','#a98bff','#ff9a3c'];for(let i=0;i<80;i++)confetti.push({x:Math.random()*W,y:-Math.random()*220,v:.8+Math.random()*1.6,o:Math.random()*100,c:cl[i%5]})}
+// Vẽ cảnh bên trong tiệm bánh (chạy mỗi khung hình khi st==='shop')
+// r(x, y, rộng, cao, màu) = vẽ một khối chữ nhật
 function drawShop(){
-  r(0,0,W,H,'#ffd9e6');
-  for(let x=0;x<W;x+=32)r(x,34,16,198,'#ffcfe0');
-  r(0,0,W,30,'#fff');
-  for(let x=0;x<W;x+=40)r(x,0,20,30,'#e0455f');
-  r(0,30,W,4,'#a52a1e');
-  r(0,232,W,H-232,'#e2ad74');
-  for(let x=0;x<W;x+=48)r(x,232,2,H-232,'#c98f56');
-  txt(blown?'Hope your day is as sweet as cake!':'Happy Birthday!',W/2,66,20,'#a52a1e');
-  r(170,138,140,6,'#fff');
-  r(180,104,120,34,'#fff4e6');r(180,104,120,10,'#f58aa8');r(180,122,120,4,'#f58aa8');
-  for(let i=0;i<5;i++)r(190+i*24,114,8,8,'#f58aa8');
-  [210,236,262].forEach((x,i)=>{
-    r(x,88,5,16,i%2?'#4ecdc4':'#ffd23f');
-    if(!blown){const f=Math.floor(t/6+i)%2;r(x-1,80-f,7,8+f,'#ffb347');r(x+1,82-f,3,5,'#fff2a0')}
-    else r(x+1,80,3,6,'#cfc6c6');
-  });
-  const n=Math.min(got.length,8),sx0=Math.round((W-n*52)/2)+2;
-  for(let i=0;i<n;i++)c.drawImage(cakes,got[i]*24,0,24,24,sx0+i*52,168,48,48);
-  r(24,214,432,8,'#f6e2c8');r(24,222,432,48,'#c8503a');r(24,222,432,4,'#a52a1e');
+  // --- NỀN TƯỜNG ---
+  r(0,0,W,H,'#ffd9e6');                                   // tô hồng toàn màn hình
+  for(let x=0;x<W;x+=32)r(x,34,16,198,'#ffcfe0');         // sọc dọc hồng đậm hơn trên tường
+
+  // --- MÁI HIÊN SỌC ĐỎ TRẮNG Ở TRÊN CÙNG ---
+  r(0,0,W,30,'#fff');                                     // nền trắng
+  for(let x=0;x<W;x+=40)r(x,0,20,30,'#e0455f');           // cứ 40px lại có 1 sọc đỏ rộng 20px
+  r(0,30,W,4,'#a52a1e');                                  // viền nâu đỏ dưới mái hiên
+
   
+
+  // --- LỜI CHÚC Ở GIỮA PHÍA TRÊN ---
+  // blown = true nghĩa là đã thổi nến, lúc đó đổi sang câu chúc thứ hai
+  txt(blown?'Hope your day is as sweet as cake!':'Happy Birthday!',W/2,66,20,'#a52a1e');
+
+  // --- BÁNH SINH NHẬT LỚN ---
+  r(170,138,140,6,'#fff');                                // đĩa đựng bánh
+  r(180,104,120,34,'#fff4e6');                            // thân bánh màu kem
+  r(180,104,120,10,'#f58aa8');                            // lớp kem hồng phía trên
+  r(180,122,120,4,'#f58aa8');                             // dải kem hồng ở giữa thân
+  for(let i=0;i<5;i++)r(190+i*24,114,8,8,'#f58aa8');      // 5 giọt kem chảy xuống
+
+  // --- 3 CÂY NẾN (tại x = 210, 236, 262) ---
+  [210,236,262].forEach((x,i)=>{
+    r(x,88,5,16,i%2?'#4ecdc4':'#ffd23f');                 // thân nến, màu xanh/vàng xen kẽ
+    if(!blown){
+      // chưa thổi: vẽ ngọn lửa nhấp nháy
+      // f đổi giữa 0 và 1 theo thời gian t, mỗi nến lệch nhịp nhau nhờ cộng i
+      const f=Math.floor(t/6+i)%2;
+      r(x-1,80-f,7,8+f,'#ffb347');                        // lửa ngoài màu cam
+      r(x+1,82-f,3,5,'#fff2a0');                          // lõi lửa màu vàng nhạt
+    }else{
+      r(x+1,80,3,6,'#cfc6c6');                            // đã thổi: hiện làn khói xám
+    }
+  });
+
+  
+  
+
+  
+
+  // --- DÒNG HƯỚNG DẪN Ở DƯỚI CÙNG ---
   txt('Press to blow out the candles',W/2,300,12,'#4a2e22');
+
+  // --- PHÁO GIẤY (chỉ có sau khi thổi nến; vị trí được cập nhật trong hàm update) ---
   confetti.forEach(p=>r(p.x,p.y,4,4,p.c));
+
+  // --- HIỆU ỨNG MỜ DẦN KHI VỪA VÀO TIỆM ---
+  // shopT đếm khung hình từ lúc vào tiệm; trong 30 khung đầu, lớp trắng mờ dần từ đậm sang trong
   if(shopT<30){c.globalAlpha=1-shopT/30;r(0,0,W,H,'#fff');c.globalAlpha=1}
 }
 function draw(){
@@ -148,7 +177,7 @@ if(bx<W+20 && shop.complete && shop.naturalWidth){
   // pops
   for(const p of pops)txt('+10',p.x-d+6,p.y-p.t*.6,9,'#d9392b');
   // hud
-  c.textAlign='right';c.font='bold 14px "Courier New",monospace';c.fillStyle=INK;c.fillText('Bánh: '+score,W-10,22);
+  c.textAlign='right';c.font='bold 14px "Courier New",monospace';c.fillStyle=INK;c.fillText('cake: '+score,W-10,22);
   r(10,12,100,5,'#4a2e2255');r(10,12,Math.min(100,100*d/(GOAL+145)),5,'#ff3b5c');
   // overlays
 
